@@ -121,7 +121,9 @@ public class AVPlayer implements Runnable{
 
 	@Override
 	public void run(){
+
 		try {
+			//is.skip(2000*len); /// 1500 -2000 break;
 		int offset = 0;
 				int numRead = 0;
 				while (offset < bytes.length && (numRead=is.read(bytes, offset, bytes.length-offset)) >= 0) {
@@ -135,21 +137,24 @@ public class AVPlayer implements Runnable{
 	}
 
 	public static void main(String[] args) {
-		if (args.length < 2) {
-			System.err.println("usage: java -jar AVPlayer.jar [RGB file] [WAV file]");
-			return;
-		}
-		sync s = new sync();
+		// if (args.length < 2) {
+		// 	System.err.println("usage: java -jar AVPlayer.jar [RGB file] [WAV file]");
+		// 	return;
+		// }
+		// sync s = new sync();
 
-		AVPlayer ren = new AVPlayer();
-		ren.initialize(args, s);
-		Thread playvideo = new Thread(ren);
+		// AVPlayer ren = new AVPlayer();
+		// ren.initialize(args, s);
+		// Thread playvideo = new Thread(ren);
 
-		PlaySound ps = new PlaySound(args[1], s);
-		Thread playsound = new Thread(ps);
+		// PlaySound ps = new PlaySound(args[1], s);
+		// Thread playsound = new Thread(ps);
 		
-		playvideo.start();
-		playsound.start();
+		// playvideo.start();
+		// playsound.start();
+		BreakDown test = new BreakDown(args[0], args[1]);
+		test.initialize();
+
 	}
 
 }

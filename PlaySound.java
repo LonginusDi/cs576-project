@@ -1,5 +1,5 @@
 //package org.wikijava.sound.playWave;
-
+import java.util.*;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +34,8 @@ public class PlaySound implements Runnable{
     byte[] audioBuffer = new byte[this.EXTERNAL_BUFFER_SIZE];
     int readBytes = 0;
 
+    int[] pre;
+
     sync s;
 
     /**
@@ -41,6 +43,7 @@ public class PlaySound implements Runnable{
      */
     public PlaySound(String filename, sync sy) {
 
+        pre = new int[24];
     	FileInputStream i;
     	try {
     		i = new FileInputStream(filename);
@@ -87,6 +90,12 @@ public class PlaySound implements Runnable{
 		//     dataLine.write(audioBuffer, 0, readBytes);
 		// }
 	 //    }
+            for(int i = 0; i < this.EXTERNAL_BUFFER_SIZE; i++){
+                byte r = audioBuffer[i];
+                short sr = (short)(r & 0xff);
+                int rr = sr;
+                pre[i/3512] += rr;
+            }
     	} catch (IOException e1) {
     		throw new PlayWaveException(e1);
     	} 
@@ -99,8 +108,25 @@ public class PlaySound implements Runnable{
 
     		if (readBytes >= 0){
     			dataLine.write(audioBuffer, 0, readBytes);
+
+            for(int i = 1; i < 24; i++){
+                double diff = (pre[i] - pre[i-1]) * 1.000 / 3512.000;
+                System.out.println(diff);
+            }
+
     			readBytes = audioInputStream.read(audioBuffer, 0,
     				audioBuffer.length);
+            for(int i = 0; i < 24; i++){
+                pre[i] = 0;
+            }
+
+            for(int i = 0; i < this.EXTERNAL_BUFFER_SIZE; i++){
+                byte r = audioBuffer[i];
+                short sr = (short)(r & 0xff);
+                int rr = sr;
+                pre[i/3512] += rr;
+            }
+            
     		}
     		else{
     			return false;
