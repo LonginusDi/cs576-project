@@ -21,8 +21,10 @@ public class AVPlayer implements Runnable{
 	long len = width*height*3;
 	byte[] bytes = new byte[(int)len];
 	InputStream is;
-	private final int fps = 24;
+	private final int fps = 15;
 	long sec_pre_frame = (long)1000.0f/fps;
+
+	int framecount = 0;
 
 	public void initialize(String[] args, sync sy){
 
@@ -96,7 +98,8 @@ public class AVPlayer implements Runnable{
 					}
 				}
 				lbIm1.setIcon(new ImageIcon(img));
-
+				framecount++;
+				System.out.println(framecount);
 				int offset = 0;
 				int numRead = 0;
 				while (offset < bytes.length && (numRead=is.read(bytes, offset, bytes.length-offset)) >= 0) {
@@ -115,7 +118,7 @@ public class AVPlayer implements Runnable{
 			e.printStackTrace();
 		}
 		s.checkSync();
-		System.out.println("vedio one sec");
+		//System.out.println("vedio one sec");
 		return true;
 	}
 
@@ -123,7 +126,8 @@ public class AVPlayer implements Runnable{
 	public void run(){
 
 		try {
-			//is.skip(2000*len); /// 1500 -2000 break;
+			is.skip(1450*len); /// 1500 -2000 break;
+			framecount = 1450;
 		int offset = 0;
 				int numRead = 0;
 				while (offset < bytes.length && (numRead=is.read(bytes, offset, bytes.length-offset)) >= 0) {
@@ -137,10 +141,10 @@ public class AVPlayer implements Runnable{
 	}
 
 	public static void main(String[] args) {
-		// if (args.length < 2) {
-		// 	System.err.println("usage: java -jar AVPlayer.jar [RGB file] [WAV file]");
-		// 	return;
-		// }
+		if (args.length < 2) {
+			System.err.println("usage: java -jar AVPlayer.jar [RGB file] [WAV file]");
+			return;
+		}
 		// sync s = new sync();
 
 		// AVPlayer ren = new AVPlayer();

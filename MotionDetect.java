@@ -14,8 +14,8 @@ public class MotionDetect {
 
 	// get motion vector for the entire frame
 	public ArrayList<MotionVector> getkMotionVector(byte[] previous, byte[] current){
-		double[][][] preImg = new double[height][width][3];
-		double[][][] curImg = new double[height][width][3];
+		double[][] preImg = new double[height][width];
+		double[][] curImg = new double[height][width];
 		ArrayList<MotionVector> motionVector = new ArrayList<MotionVector>();
 
 		preImg = convertMatrix(previous);
@@ -41,10 +41,10 @@ public class MotionDetect {
 						double mad = 0;
 						for(int q = 0; q < 16; q++){
 							for(int p = 0; p < 16; p++){
-								double r = Math.abs(curImg[q + i][p + j][0] - preImg[q + y][p + x][0]);
-								double g = Math.abs(curImg[q + i][p + j][1] - preImg[q + y][p + x][1]);
-								double b = Math.abs(curImg[q + i][p + j][2] - preImg[q + y][p + x][2]);
-								mad += Math.sqrt(r*r + g*g + b*b);
+								double r = Math.abs(curImg[q + i][p + j] - preImg[q + y][p + x]);
+								// double g = Math.abs(curImg[q + i][p + j][1] - preImg[q + y][p + x][1]);
+								// double b = Math.abs(curImg[q + i][p + j][2] - preImg[q + y][p + x][2]);
+								mad += r;//Math.sqrt(r*r + g*g + b*b);
 							}
 						}
 
@@ -80,8 +80,9 @@ public class MotionDetect {
 		}
 		// average motion vector
 		avgMotion /= motionVector.size();
-
+		colorDiff /= motionVector.size();
 		System.out.println("motion vector: "+avgMotion);
+		System.out.println("colordiff: "+Math.abs(colorDiff));
 		// check with threshold
 		if(avgMotion > motionThres || colorDiff > colorThres)
 			return true;
@@ -90,35 +91,8 @@ public class MotionDetect {
 	}
 
 
-	// public double[][] convertMatrix(byte[] bytes){
-	// 	double[][] temp = new double[height][width];
-	// 			int ind = 0;
-	// 			for(int y = 0; y < height; y++){
-
-	// 				for(int x = 0; x < width; x++){
-
-	// 					byte r = bytes[ind];
-	// 					byte g = bytes[ind+height*width];
-	// 					byte b = bytes[ind+height*width*2]; 
-
-	// 					short sr = (short)(r & 0xff);
-	// 					short gr = (short)(g & 0xff);
-	// 					short br = (short)(b & 0xff);
-
-	// 					int rr = sr;
-	// 					int gg = gr ;
-	// 					int bb = br;
-
-	// 					temp[y][x] = (rr/1.000) * 0.30 + (gg/1.000) * 0.59 + (bb/1.000) * 0.11;
-	// 					ind++;
-	// 				}
-	// 			}
-	// 	return temp;
-	// }
-
-		//cover from [] to [][][]
-		public double[][][] convertMatrix(byte[] bytes){
-		double[][][] temp = new double[height][width][3];
+	public double[][] convertMatrix(byte[] bytes){
+		double[][] temp = new double[height][width];
 				int ind = 0;
 				for(int y = 0; y < height; y++){
 
@@ -136,13 +110,40 @@ public class MotionDetect {
 						int gg = gr ;
 						int bb = br;
 
-						//temp[y][x] = (rr/1.000) * 0.30 + (gg/1.000) * 0.59 + (bb/1.000) * 0.11;
-						temp[y][x][0] = rr/1.000;
-						temp[y][x][1] = rr/1.000;
-						temp[y][x][2] = rr/1.000;
+						temp[y][x] = (rr/1.000) * 0.30 + (gg/1.000) * 0.59 + (bb/1.000) * 0.11;
 						ind++;
 					}
 				}
 		return temp;
 	}
+
+		//cover from [] to [][][]
+	// 	public double[][][] convertMatrix(byte[] bytes){
+	// 	double[][][] temp = new double[height][width][3];
+	// 			int ind = 0;
+	// 			for(int y = 0; y < height; y++){
+
+	// 				for(int x = 0; x < width; x++){
+
+	// 					byte r = bytes[ind];
+	// 					byte g = bytes[ind+height*width];
+	// 					byte b = bytes[ind+height*width*2]; 
+
+	// 					short sr = (short)(r & 0xff);
+	// 					short gr = (short)(g & 0xff);
+	// 					short br = (short)(b & 0xff);
+
+	// 					int rr = sr;
+	// 					int gg = gr ;
+	// 					int bb = br;
+
+	// 					//temp[y][x] = (rr/1.000) * 0.30 + (gg/1.000) * 0.59 + (bb/1.000) * 0.11;
+	// 					temp[y][x][0] = rr/1.000;
+	// 					temp[y][x][1] = rr/1.000;
+	// 					temp[y][x][2] = rr/1.000;
+	// 					ind++;
+	// 				}
+	// 			}
+	// 	return temp;
+	// }
 }

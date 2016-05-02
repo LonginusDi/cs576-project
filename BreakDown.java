@@ -24,7 +24,7 @@ public class BreakDown{
 	int width = 480;
 	int height = 270;
 	long len = width*height*3;
-	int audioLen = 3512;
+	int audioLen = 3200;
 	int readBytes = 0;
 	byte[] previousImg = new byte[(int)len];
 	byte[] currentImg = new byte[(int)len];
@@ -46,16 +46,18 @@ public class BreakDown{
 			File file = new File(filename);
 			is = new FileInputStream(file);
 			totalLength = (long)file.length();
-
+			//is.skip(1491*len);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		long audiolength;
 		//read audio
 		FileInputStream i;
     	try {
+    		File f = new File(audio);
+    		audiolength = (long)f.length();
     		i = new FileInputStream(audio);
     	} catch (FileNotFoundException e) {
     		e.printStackTrace();
@@ -77,14 +79,15 @@ public class BreakDown{
 
 		MotionDetect motionDetect = new MotionDetect();
 
-		
 
 		// compare the current and previous frame
-
+		
+		//frameCount = 1491;
 		boolean newSection = true;
 		// if it is not the end of video, continue
 		while(hasNext()){
 			frameCount ++;
+
 			System.out.println("Frame: "+frameCount);
 			// start a new section, no comparsion here.
 			if(newSection){
@@ -102,7 +105,7 @@ public class BreakDown{
 						}
 
 					readBytes = audioInputStream.read(prevideo, 0,
-    				prevideo.length);
+    				prevideo.length); 
 					}
 					catch (IOException e){}
 
@@ -125,11 +128,13 @@ public class BreakDown{
 				catch (IOException e){}
 
 				// compare with motion vector and color
-				boolean breakPoint = motionDetect.checkMotion(previousImg, currentImg, 8 , 30000 * 506);
-				// compare audio frame
-				boolean viedoBreak = videobreak(prevideo, currentvideo, 1);
 
-				if(breakPoint || viedoBreak){
+				// color 10000- 20000, change sceen 17, sound maybe whatever
+				boolean breakPoint = motionDetect.checkMotion(previousImg, currentImg, 200 , 30000 * 506); 
+				// compare audio frame
+				boolean audioBreak = audiobreak(prevideo, currentvideo, 1000000);
+
+				if(breakPoint ||  audioBreak){
 					sectionList.get(sectionList.size()-1).setEnd(frameCount);
 					newSection = true;
 				}
@@ -138,8 +143,8 @@ public class BreakDown{
 				}
 
 
-				previousImg = currentImg;
-				prevideo = currentvideo;
+				previousImg = currentImg.clone();
+				prevideo = currentvideo.clone();
 			}
 		}
 
@@ -157,7 +162,7 @@ public class BreakDown{
 	}
 
 	// compare value from two audio frame with threshold
-	boolean videobreak(byte[] pre, byte[] current, int threshold){
+	boolean audiobreak(byte[] pre, byte[] current, int threshold){
 		int leng = current.length;
 		int totalpre = 0;
 		int totalcurrent = 0;
@@ -174,7 +179,9 @@ public class BreakDown{
 			totalpre += cc;
 		}
 		// get difference and compare
-		if(Math.abs(totalcurrent - totalpre) > threshold)
+		int diff = Math.abs(totalcurrent - totalpre);
+		System.out.println("sound diff: "+diff);
+		if( diff > threshold)
 			return true;
 
 		return false;
