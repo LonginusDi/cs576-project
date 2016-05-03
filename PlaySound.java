@@ -29,10 +29,15 @@ public class PlaySound implements Runnable{
 
 	private InputStream waveStream;
 	AudioInputStream audioInputStream = null;
-    private final int EXTERNAL_BUFFER_SIZE = 48000; // 
+    private final int EXTERNAL_BUFFER_SIZE = 3200; // 
     SourceDataLine dataLine = null;
+       // int frame_pre_sec = 3200;
     byte[] audioBuffer = new byte[this.EXTERNAL_BUFFER_SIZE];
     int readBytes = 0;
+    int start= 1;
+    int end = 4500;
+    int framecount = 1;
+    int fps = 15;
 
 
     sync s;
@@ -83,15 +88,8 @@ public class PlaySound implements Runnable{
 
 	// Starts the music :P
     	dataLine.start();
-        byte[] t = new byte[3200];
-        int i = 0;
+
     	try {
-	    // while (readBytes != -1) {
-            while(i < 3200){
-                readBytes = audioInputStream.read(t, 0,
-                t.length);
-                i++;
-            }
            
     		readBytes = audioInputStream.read(audioBuffer, 0,
     			audioBuffer.length);
@@ -106,7 +104,7 @@ public class PlaySound implements Runnable{
     }
 
     public boolean playOneSec() throws PlayWaveException {
-    	
+    	for(int j = 0; j < fps; j++){
     	try{
 
     		if (readBytes >= 0){
@@ -124,6 +122,13 @@ public class PlaySound implements Runnable{
     	} catch (IOException e1) {
     		throw new PlayWaveException(e1);
     	}
+        if(framecount > end){
+            return false;
+        }
+        framecount++;
+
+    }
+
     	s.checkSync();
     	//System.out.println("audio one sec");
 
@@ -134,11 +139,21 @@ public class PlaySound implements Runnable{
     public void run(){
     	try{
     		play();
+            byte[] t = new byte[3200];
+                    while(framecount < start){
+                int readBytes = audioInputStream.read(t, 0,
+                t.length);
+                framecount++;
+
+        }
     		while(playOneSec()){}
 
     	}	catch (PlayWaveException e1) {
     		e1.printStackTrace();
     	} 
+        catch (IOException e1) {
+            e1.printStackTrace();
+        }
     	finally {
 	    // plays what's left and and closes the audioChannel
     		dataLine.drain();
@@ -147,5 +162,13 @@ public class PlaySound implements Runnable{
 
     }
 
+    public void setPos(int start, int end){
+        this.start = start;
+        this.end = end;
+        
+
+
+
+    }
 
 }

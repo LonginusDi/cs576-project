@@ -12,14 +12,20 @@ public class MotionDetect {
 	int width = 480;
 	int height = 270;
 
+	int frame = 0;
+	double min = Double.MAX_VALUE;
+
 	// get motion vector for the entire frame
-	public ArrayList<MotionVector> getkMotionVector(byte[] previous, byte[] current){
+	public ArrayList<ArrayList<MotionVector>> getkMotionVector(byte[] previous, byte[] current, byte[] indexpic){
 		double[][] preImg = new double[height][width];
 		double[][] curImg = new double[height][width];
+		double[][] indImg = new double[height][width];
 		ArrayList<MotionVector> motionVector = new ArrayList<MotionVector>();
+		ArrayList<MotionVector> indexVector = new ArrayList<MotionVector>();
 
 		preImg = convertMatrix(previous);
 		curImg = convertMatrix(current);
+		indImg = convertMatrix(indexpic);
 
 		// find vector for each 16*16 block
 		for(int i = 0; i<= height - 16; i += 16){
@@ -35,19 +41,29 @@ public class MotionDetect {
 				double xVec = Double.MAX_VALUE;
 				double yVec = Double.MAX_VALUE;
 
+				double indlowestScore = Double.MAX_VALUE;
+				double indxVec = Double.MAX_VALUE;
+				double indyVec = Double.MAX_VALUE;
+
 				for(int y = bot; y < top - 16; y++){
 					for(int x = left; x < right - 16; x++){
 						// use MAD to find difference between two blocks
 						double mad = 0;
+						double indmad = 0;
 						for(int q = 0; q < 16; q++){
 							for(int p = 0; p < 16; p++){
 								double r = Math.abs(curImg[q + i][p + j] - preImg[q + y][p + x]);
-								// double g = Math.abs(curImg[q + i][p + j][1] - preImg[q + y][p + x][1]);
+								double g = Math.abs(indImg[q + i][p + j] - preImg[q + y][p + x]);
 								// double b = Math.abs(curImg[q + i][p + j][2] - preImg[q + y][p + x][2]);
 								mad += r;//Math.sqrt(r*r + g*g + b*b);
+								indmad += g;
 							}
 						}
-
+						if(indmad < indlowestScore){
+								indlowestScore = indmad;
+								indxVec = x - j;
+								indyVec = y - i;
+							}
 
 							if(mad < lowestScore){
 								lowestScore = mad;
@@ -62,27 +78,59 @@ public class MotionDetect {
 				MotionVector motion = new MotionVector(j, i, xVec, yVec, lowestScore);
 				motionVector.add(motion);
 
+				MotionVector m = new MotionVector(j, i, indxVec, indyVec, indlowestScore);
+				indexVector.add(m);
+
 			}
 		}
 
-		return motionVector;
+		ArrayList<ArrayList<MotionVector>> result = new ArrayList<ArrayList<MotionVector>>();
+		result.add(motionVector);
+		result.add(indexVector);
+
+		return result;
 	}
 
 	//check with threshold
-	public boolean checkMotion(byte[] previous, byte[] current, double motionThres, double colorThres){
-		ArrayList<MotionVector> motionVector = getkMotionVector(previous, current);
+	public boolean checkMotion(byte[] previous, byte[] current, byte[] indexpic, double motionThres, double colorThres, int framecount){
+		ArrayList<ArrayList<MotionVector>> motionVector = getkMotionVector(previous, current, indexpic);
 		double avgMotion = 0;
 		double colorDiff = 0;
-		for(MotionVector m: motionVector){
+		double indavgMotion = 0;
+		double indcolorDiff = 0;
+		
+
+		for(MotionVector m: motionVector.get(0)){
 			// add up motion vectors and collor difference
 			avgMotion += Math.sqrt(m.xVector * m.xVector + m.yVector * m.yVector);
 			colorDiff += m.madScore;
 		}
+
+		for(MotionVector m: motionVector.get(1)){
+			// add up motion vectors and collor difference
+			indavgMotion += Math.sqrt(m.xVector * m.xVector + m.yVector * m.yVector);
+			indcolorDiff += m.madScore;
+		}
+
 		// average motion vector
-		avgMotion /= motionVector.size();
-		colorDiff /= motionVector.size();
-		System.out.println("motion vector: "+avgMotion);
-		System.out.println("colordiff: "+Math.abs(colorDiff));
+		avgMotion /= motionVector.get(0).size();
+		colorDiff /= motionVector.get(0).size();
+		// System.out.println("motion vector: "+avgMotion);
+		// System.out.println("colordiff: "+Math.abs(colorDiff));
+
+		indavgMotion /= motionVector.get(1).size();
+		indcolorDiff /= motionVector.get(1).size();
+
+		if(indavgMotion < min){
+			min = indavgMotion;
+			frame = framecount;
+		}
+
+
+		System.out.println("motion vector: "+indavgMotion);
+		System.out.println("colordiff: "+Math.abs(indcolorDiff));
+
+
 		// check with threshold
 		if(avgMotion > motionThres || colorDiff > colorThres)
 			return true;
