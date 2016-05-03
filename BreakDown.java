@@ -159,10 +159,21 @@ public class BreakDown{
 
 		selectedFrame = motionDetect.frame;
 
+		try{
+		File f = new File("result.txt");
+		f.createNewFile();
+      	FileWriter writer = new FileWriter(f); 
+      // Writes the content to the file
+     
+
 		for(Section s: sectionList){
-			
+
 			System.out.println("Starting: "+ s.startingFrame + "  Ending: " + s.endingFrame + "  Total: "+s.getTotalFrame());
+			writer.write(s.startingFrame+"\n"); 
+
 		}
+		}
+		catch (IOException e){}
 	}
 
 	// check if it is the end of the video
