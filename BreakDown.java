@@ -170,10 +170,14 @@ public class BreakDown{
 
 			System.out.println("Starting: "+ s.startingFrame + "  Ending: " + s.endingFrame + "  Total: "+s.getTotalFrame());
 			writer.write(s.startingFrame+"\n"); 
+			writer.flush();
 
 		}
+		writer.close();
 		}
-		catch (IOException e){}
+		catch (IOException e){
+			System.out.println("error!" + e);
+		}
 	}
 
 	// check if it is the end of the video

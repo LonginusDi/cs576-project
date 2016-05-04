@@ -206,7 +206,7 @@ public class AVPlayer implements Runnable{
     InputMap inputMap = content.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
     inputMap.put(stroke, "OPEN");
     content.getActionMap().put("OPEN", actionListener);
- 
+
 
 		BreakDown test = new BreakDown(args[0], args[1], args[2]);
 		test.initialize();
@@ -254,7 +254,6 @@ public class AVPlayer implements Runnable{
 
 		playvideo.start();
 		playsound.start();
-
 
 	}
 
