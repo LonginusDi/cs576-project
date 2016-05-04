@@ -173,6 +173,8 @@ public class BreakDown{
 			writer.flush();
 
 		}
+		writer.write("4500\n"); 
+		writer.flush();
 		writer.close();
 		}
 		catch (IOException e){
