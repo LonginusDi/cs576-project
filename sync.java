@@ -20,4 +20,25 @@ public class sync {
 	}
 		
 	}
+
+	private boolean isPause = false;
+
+	public synchronized void pause() {
+		isPause = true;
+	}
+
+	public synchronized void resume() {
+		isPause = false;
+		notifyAll();
+	}
+
+	public synchronized void look() {
+		while (isPause) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }

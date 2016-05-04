@@ -6,10 +6,11 @@ import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.awt.event.ActionEvent;
 
 public class AVPlayer implements Runnable{
 
-	JFrame frame;
+	static JFrame frame;
 	JLabel lbIm1;
 	JLabel lbIm2;
 	GridBagConstraints c;
@@ -22,7 +23,8 @@ public class AVPlayer implements Runnable{
 	byte[] bytes = new byte[(int)len];
 	InputStream is;
 	private final int fps = 15;
-	long sec_pre_frame = (long)1000.0f/fps;
+	long sec_pre_frame = (long)600.0f/fps;
+	int reversebit = 0;
 
 	int framecount = 0;
 	static int frameAt;
@@ -76,8 +78,36 @@ public class AVPlayer implements Runnable{
 
 		frame.pack();
 		frame.setVisible(true);
+
+
+				// 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+   	// 	 Action actionListener = new AbstractAction() {
+    //   		public void actionPerformed(ActionEvent actionEvent) {
+    //     		//System.out.println("Got an M");
+    //     		reverse();
+    //   		}
+    // 	};
+
+    // JPanel content = (JPanel) frame.getContentPane();
+    // KeyStroke stroke = KeyStroke.getKeyStroke("M");
+
+    // InputMap inputMap = content.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+    // inputMap.put(stroke, "OPEN");
+    // content.getActionMap().put("OPEN", actionListener);
 		
 		
+	}
+
+	public void reverse(){
+		if (reversebit == 0) {
+			s.pause();
+		} else {
+			s.resume();
+		}
+		reversebit = 1- reversebit;
+	
+
 	}
 	
 	public boolean oneSecond(){
@@ -116,7 +146,7 @@ public class AVPlayer implements Runnable{
 				long difference = start - end;
 				if(difference < sec_pre_frame)
 					Thread.sleep(sec_pre_frame - difference);
-
+				s.look();
 
 			}
 		}
@@ -154,16 +184,33 @@ public class AVPlayer implements Runnable{
 		}
 		sync s = new sync();
 
-		AVPlayer ren = new AVPlayer();
+		final AVPlayer ren = new AVPlayer();
 		ren.initialize(args, s);
-		Thread playvideo = new Thread(ren);
+		final Thread playvideo = new Thread(ren);
 
-		PlaySound ps = new PlaySound(args[1], s);
+		final PlaySound ps = new PlaySound(args[1], s);
 		Thread playsound = new Thread(ps);
 		
-		
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+   		 Action actionListener = new AbstractAction() {
+      		public void actionPerformed(ActionEvent actionEvent) {
+        		//System.out.println("dsfdsf");
+        		ren.reverse();
+      		}
+    	};
+
+    JPanel content = (JPanel) frame.getContentPane();
+    KeyStroke stroke = KeyStroke.getKeyStroke("P");
+
+    InputMap inputMap = content.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+    inputMap.put(stroke, "OPEN");
+    content.getActionMap().put("OPEN", actionListener);
+ 
+
 		BreakDown test = new BreakDown(args[0], args[1], args[2]);
 		test.initialize();
+	
 
 		frameAt = test.selectedFrame;
 		sectionList = test.sectionList;
@@ -183,9 +230,9 @@ public class AVPlayer implements Runnable{
 			int length = frameAt-start;
 			int preIndex = index;
 			while(preIndex >=0 && length < 30) {
-				start = (int)sectionList.get(preIndex).startingFrame;
-				preIndex --;
 				
+				preIndex --;
+				start = (int)sectionList.get(preIndex).startingFrame;
 				length += (int)sectionList.get(preIndex).endingFrame - (int)sectionList.get(preIndex).startingFrame;
 			}
 		}
@@ -194,15 +241,16 @@ public class AVPlayer implements Runnable{
 			int length = end-frameAt;
 			int preIndex = index;
 			while(preIndex < sectionList.size() && length < 30) {
-				end = (int)sectionList.get(preIndex).endingFrame;
+				
 				preIndex ++;
+				end = (int)sectionList.get(preIndex).endingFrame;
 				
 				length += (int)sectionList.get(preIndex).endingFrame - (int)sectionList.get(preIndex).startingFrame;
 			}
 		}
 
 		ps.setPos(start,end);
-
+       ren.reverse();
 
 		playvideo.start();
 		playsound.start();

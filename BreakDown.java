@@ -135,9 +135,9 @@ public class BreakDown{
 				// compare with motion vector and color
 
 				// color 10000- 20000, change sceen 13- 17, sound maybe whatever
-			boolean breakPoint = motionDetect.checkMotion(previousImg, currentImg, newBytes, 14.5 , 8000, frameCount-1); 
+			boolean breakPoint = motionDetect.checkMotion(previousImg, currentImg, newBytes, 14.5 , 11000, frameCount-1); 
 				// compare audio frame
-			boolean audioBreak = audiobreak(prevideo, currentvideo, 30000);
+			boolean audioBreak = audiobreak(prevideo, currentvideo, 60000);
 
 			if(breakPoint ||  audioBreak){
 				sectionList.get(sectionList.size()-1).setEnd(frameCount-1);
@@ -164,7 +164,7 @@ public class BreakDown{
 		f.createNewFile();
       	FileWriter writer = new FileWriter(f); 
       // Writes the content to the file
-     
+     	
 
 		for(Section s: sectionList){
 

@@ -119,6 +119,8 @@ public class PlaySound implements Runnable{
     		else{
     			return false;
     		}
+
+            s.look();
     	} catch (IOException e1) {
     		throw new PlayWaveException(e1);
     	}
